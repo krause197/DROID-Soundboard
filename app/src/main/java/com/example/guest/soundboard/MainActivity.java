@@ -4,17 +4,24 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.util.Log;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener{
     private String TAG = MainActivity.class.getSimpleName();
-    TextView mTextView;
-    Integer timesTouched = 0;
-    MediaPlayer car;
-    MediaPlayer chainsaw;
-    MediaPlayer marching;
-    MediaPlayer jungle;
+    private ImageView mCar;
+    private ImageView mChainsaw;
+    private MediaPlayer car;
+    private MediaPlayer carHorn;
+    private MediaPlayer chainsaw;
+    private MediaPlayer marching;
+    private MediaPlayer jungle;
+    private GestureDetector mGestureDetector;
+    private GestureDetector mChainsawDetector;
+
 
     Context context;
 
@@ -22,47 +29,153 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        mTextView = (TextView) findViewById(R.id.touch);
+        mCar = (ImageView) findViewById(R.id.car);
+        mChainsaw = (ImageView) findViewById(R.id.chainsaw);
         context = this;
-        car = MediaPlayer.create(this,R.raw.car);
-        chainsaw = MediaPlayer.create(this,R.raw.chainsaw);
-        marching = MediaPlayer.create(this,R.raw.marching);
-        jungle = MediaPlayer.create(this,R.raw.jungle);
-
-//        mTextView.setOnTouchListener(new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View v, MotionEvent event) {
-//                timesTouched++;
-//                Log.d(TAG, "onTouch: " + timesTouched.toString());
-//
-//                return true;
-//            }
-//        });
-
-        mTextView.setOnTouchListener(new OnSwipeTouchListener(this) {
+        car = MediaPlayer.create(this, R.raw.car);
+        chainsaw = MediaPlayer.create(this, R.raw.chainsaw);
+        marching = MediaPlayer.create(this, R.raw.marching);
+        jungle = MediaPlayer.create(this, R.raw.jungle);
+        carHorn = MediaPlayer.create(this,R.raw.carhorn);
+        Android_Gesture_Detector chainsaw_gesture_detector = new Android_Gesture_Detector() {
             @Override
-            public void onSwipeDown() {
-                car.start();
-                Toast.makeText(MainActivity.this, "Down", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void onSwipeLeft() {
+            public boolean onDoubleTap(MotionEvent e) {
                 chainsaw.start();
-                Toast.makeText(MainActivity.this, "Left", Toast.LENGTH_SHORT).show();
+                return true;
             }
+        };
 
-            @Override
-            public void onSwipeRight() {
-                marching.start();
-                Toast.makeText(MainActivity.this, "Right", Toast.LENGTH_SHORT).show();
-            }
+        // Create an object of the Android_Gesture_Detector  Class
+        Android_Gesture_Detector android_gesture_detector = new Android_Gesture_Detector(){
 
             @Override
             public void onSwipeUp() {
-                jungle.start();
-                Toast.makeText(MainActivity.this, "Up", Toast.LENGTH_SHORT).show();
+                car.start();
             }
-        });
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                carHorn.start();
+                return true;
+            }
+
+        };
+        // Create a GestureDetector
+        mGestureDetector = new GestureDetector(this, android_gesture_detector);
+        mChainsawDetector = new GestureDetector(this, chainsaw_gesture_detector);
+        mCar.setOnTouchListener(this);
+        mChainsaw.setOnTouchListener(this);
+    }
+
+    @Override
+    public boolean onTouch(View view, MotionEvent motionEvent) {
+        if (view == mCar) {
+            mGestureDetector.onTouchEvent(motionEvent);
+            return true;
+        }
+        else if(view == mChainsaw){
+            mChainsawDetector.onTouchEvent(motionEvent);
+            return true;
+        }
+        return false;
+    }
+
+    class Android_Gesture_Detector implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
+        private static final int SWIPE_THRESHOLD = 100;
+        private static final int SWIPE_VELOCITY_THRESHOLD = 100;
+
+        public void onSwipeDown() {
+        }
+
+        public void onSwipeLeft() {
+        }
+
+        public void onSwipeRight() {
+        }
+
+        public void onSwipeUp() {
+        }
+
+        @Override
+        public boolean onDown(MotionEvent e) {
+            Log.d("Gesture ", " onDown");
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            Log.d("Gesture ", " onSingleTapConfirmed");
+            return true;
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            Log.d("Gesture ", " onSingleTapUp");
+            return true;
+        }
+
+        @Override
+        public void onShowPress(MotionEvent e) {
+            Log.d("Gesture ", " onShowPress");
+        }
+
+        @Override
+        public boolean onDoubleTap(MotionEvent e) {
+            Log.d("Gesture ", " onDoubleTap");
+            return true;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            Log.d("Gesture ", " onDoubleTapEvent");
+            return true;
+        }
+
+        @Override
+        public void onLongPress(MotionEvent e) {
+            Log.d("Gesture ", " onLongPress");
+        }
+
+        @Override
+        public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+
+            Log.d("Gesture ", " onScroll");
+            if (e1.getY() < e2.getY()){
+                Log.d("Gesture ", " Scroll Down");
+            }
+            if(e1.getY() > e2.getY()){
+                Log.d("Gesture ", " Scroll Up");
+            }
+            return true;
+        }
+
+        @Override
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+            boolean result = false;
+            try {
+                float diffY = e2.getY() - e1.getY();
+                float diffX = e2.getX() - e1.getX();
+                if (Math.abs(diffX) > Math.abs(diffY)) {
+                    if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffX > 0) {
+                            onSwipeRight();
+                        } else {
+                            onSwipeLeft();
+                        }
+                    }
+                } else {
+                    if (Math.abs(diffY) > SWIPE_THRESHOLD && Math.abs(velocityY) > SWIPE_VELOCITY_THRESHOLD) {
+                        if (diffY > 0) {
+                            onSwipeDown();
+                        } else {
+                            onSwipeUp();
+                        }
+                    }
+                }
+            } catch (Exception exception) {
+                exception.printStackTrace();
+            }
+            return result;
+        }
     }
 }

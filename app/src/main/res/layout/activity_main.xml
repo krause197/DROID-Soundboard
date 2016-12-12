@@ -5,15 +5,17 @@
     android:layout_height="match_parent"
     tools:context="com.example.guest.soundboard.MainActivity">
 
-    <TextView
-        android:id="@+id/touch"
+    <ImageView
+        android:id="@+id/car"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="200dp"
         android:text="Touch here!"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:src="@drawable/car"/>
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="200dp"
+        android:id="@+id/chainsaw"
+        android:layout_below="@+id/car"
+        android:src="@drawable/chainsaw" />
 </RelativeLayout>
