@@ -1,6 +1,10 @@
 package com.example.guest.soundboard;
 
 import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,7 +14,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageView;
 
-public class MainActivity extends AppCompatActivity implements View.OnTouchListener{
+public class MainActivity extends AppCompatActivity implements View.OnTouchListener, SensorEventListener {
     private String TAG = MainActivity.class.getSimpleName();
     private ImageView mCar;
     private ImageView mChainsaw;
@@ -21,6 +25,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
     private MediaPlayer jungle;
     private GestureDetector mGestureDetector;
     private GestureDetector mChainsawDetector;
+
+    private SensorManager mSensorManager;
+    private Sensor mSensor;
+    private long lastUpdate = 0;
+    private float last_x, last_y, last_z;
+    private static final int SHAKE_THRESHOLD = 500;
 
 
     Context context;
@@ -37,6 +47,12 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
         marching = MediaPlayer.create(this, R.raw.marching);
         jungle = MediaPlayer.create(this, R.raw.jungle);
         carHorn = MediaPlayer.create(this,R.raw.carhorn);
+
+        mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        mSensorManager.registerListener(this, mSensor, mSensorManager.SENSOR_DELAY_NORMAL);
+
+
         Android_Gesture_Detector chainsaw_gesture_detector = new Android_Gesture_Detector() {
             @Override
             public boolean onDoubleTap(MotionEvent e) {
@@ -78,6 +94,43 @@ public class MainActivity extends AppCompatActivity implements View.OnTouchListe
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        Sensor sensor = event.sensor;
+
+        if (sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            float x = event.values[0];
+            float y = event.values[1];
+            float z = event.values[2];
+
+            long curTime = System.currentTimeMillis();
+
+            if ((curTime - lastUpdate) > 100) {
+                long diffTime = (curTime - lastUpdate);
+                lastUpdate = curTime;
+
+                float speed = Math.abs(x + y + z - last_x - last_y - last_z) / diffTime * 10000;
+                Log.d(TAG, "x is : " + x);
+                Log.d(TAG, "y is : " + y);
+                Log.d(TAG, "z is : " + z);
+                if (speed > SHAKE_THRESHOLD) {
+                    Log.d("SensorEventListener", "shaking");
+
+
+                    last_x = x;
+                    last_y = y;
+                    last_z = z;
+
+                }
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
     }
 
     class Android_Gesture_Detector implements GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
